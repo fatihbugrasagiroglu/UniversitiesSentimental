@@ -1,0 +1,72 @@
+#importing libraries 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.expected_conditions import presence_of_element_located
+from selenium.common.exceptions import NoSuchElementException
+import time
+import string
+import openpyxl
+import os
+import json
+
+#Loading Selenium webdriver
+PATH = "C:/Users/hp/OneDrive/Desktop/chromedriver.exe"
+driver = webdriver.Chrome(PATH)
+
+#urls for different universities 
+UoT= 'https://www.google.ca/maps/place/University+of+Toronto+-+St.+George+Campus/@43.6628917,-79.3978504,17z/data=!4m7!3m6!1s0x882b34b8f331fd9b:0x8d1d9bb6765a76f7!8m2!3d43.6628917!4d-79.3956564!9m1!1b1'
+ReU= 'https://www.google.com/maps/place/Ryerson+University/@43.6576585,-79.3788017,17z/data=!4m7!3m6!1s0x89d4cb35431c1395:0xe8ed8bd69125d6f4!8m2!3d43.6576585!4d-79.3788017!9m1!1b1'
+WeU= 'https://www.google.ca/maps/place/Western+University/@43.0095971,-81.2759223,17z/data=!4m7!3m6!1s0x882eee0e6ac42bd1:0xaa87f353aab9799b!8m2!3d43.0095971!4d-81.2737336!9m1!1b1'
+UoO= 'https://www.google.ca/maps/place/University+of+Ottawa/@45.4231064,-75.6853216,17z/data=!4m7!3m6!1s0x4cce050a6db98d73:0x188a59c3622fdbae!8m2!3d45.4231064!4d-75.6831329!9m1!1b1'
+YoU= 'https://www.google.ca/maps/place/York+University/@43.7734535,-79.5040571,17z/data=!4m7!3m6!1s0x89d4cd330b767bfb:0xdbb899cc9da76d19!8m2!3d43.7734535!4d-79.5018684!9m1!1b1'
+
+#Opening Google maps url at a time & add sleeping duration to allow for full loading  
+driver.get(WeU)
+time.sleep(3)
+
+#Creating a scrollable dynamic function to show all the reviews 
+scrollable_div_WeU = driver.find_element_by_xpath('//*[@id="pane"]/div/div[1]/div/div/div[2]')
+for i in range(0,10):
+    driver.execute_script('arguments[0].scrollTop = arguments[0].scrollHeight', scrollable_div_WeU)
+    time.sleep(1)
+
+import numpy as np
+from Crypto.PublicKey import RSA
+import json
+from urllib.request import urlopen, Request
+from bs4 import BeautifulSoup as bs
+import os 
+import requests
+import pandas as pd
+from pprint import pprint
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pymongo import MongoClient
+%matplotlib inline
+
+#parsing the webpage
+response_WeU = bs(driver.page_source, 'html.parser')
+#closing the dirver after parsing it to start building and analysing the outcome
+driver.close()
+
+reviews_WeU = response_WeU.find_all('div', class_='ODSEW-ShBeI NIyLF-haAclf gm2-body-2')
+len(reviews_WeU)
+
+# creating a review summary 
+# Select the items that will be used in the analysis
+def get_review_summary(result_set):
+    rev_dict = {'Review Rate': [], 'Review Time': [], 'Review Text': []}
+    for result in result_set:
+        review_rate = result.find('span', class_='ODSEW-ShBeI-H1e3jb')["aria-label"]
+        review_time = result.find('span', class_='ODSEW-ShBeI-RgZmSc-date').text
+        review_text = result.find('span', class_='ODSEW-ShBeI-text').text 
+        rev_dict['Review Rate'].append(review_rate)
+        rev_dict['Review Time'].append(review_time)
+        rev_dict['Review Text'].append(review_text)
+        
+    return(pd.DataFrame(rev_dict))
+
+rev_summ = get_review_summary(reviews_WeU)
+rev_summ
