@@ -1,0 +1,20 @@
+def sentiment_analysis(alluni):
+    def getSubjectivity(Text):
+        return TextBlob(Text).sentiment.subjectivity
+  
+ #Create a function to get the polarity
+def getPolarity(Text):
+    return TextBlob(Text).sentiment.polarity
+  
+ #Create two new columns ‘Subjectivity’ & ‘Polarity’
+alluni["TextBlob_Subjectivity"] = alluni["alluni"].apply(getSubjectivity)
+alluni["TextBlob_Polarity"] = alluni["alluni"].apply(getPolarity)
+def getAnalysis(score):
+    if score < 0:
+        return "Negative"
+    elif score == 0:
+        return "Neutral"
+    else:
+        return "Positive"
+alluni["TextBlob_Analysis"] = alluni["TextBlob_Polarity"].apply(getAnalysis )
+return alluni
